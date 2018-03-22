@@ -1,3 +1,9 @@
+def list_depth(l,d):
+    if type(l) == list:
+        return max(map(lambda m: list_depth(m,d+1),l))
+    else:
+        return d
+
 def typecode(x):
     """
     If x a number, output, n
@@ -8,7 +14,7 @@ def typecode(x):
     if type(x) == int or type(x) == float:
         return 'n'
     if type(x) == list:
-        if _list_depth(x,0) > 1:
+        if list_depth(x,0) > 1:
             return 'L'
         else:
             return 'l'

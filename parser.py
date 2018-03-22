@@ -2,6 +2,7 @@ from common import *
 import number
 import conditional
 from instruction import *
+import operators
 
 # These are stored in the order that they are matched against. The first
 # one to match is executed.
@@ -36,7 +37,27 @@ cmd_parsers = [
         'NOP',
         '(\s+)',
         None
-    )
+    ),
+    cmd_parser_t(
+        'PLUS',
+        '(\+)',
+        operators.dyad_instr_constr
+    ),
+    cmd_parser_t(
+        'MINUS',
+        '(-)',
+        operators.dyad_instr_constr
+    ),
+    cmd_parser_t(
+        'DIVIDE',
+        '(÷)',
+        operators.dyad_instr_constr
+    ),
+    cmd_parser_t(
+        'TIMES',
+        '(×)',
+        operators.dyad_instr_constr
+    ),
 ]
 
 class parser_t:

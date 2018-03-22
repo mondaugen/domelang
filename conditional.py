@@ -36,7 +36,7 @@ class else_instr_t(instr_t):
         if self.if_instr and self.if_instr.endif_instr:
             exec_env.next_instr = self.if_instr.endif_instr.next
         else:
-            exec_env.next_instr
+            exec_env.next_instr = None
 
 def else_instr_constr(matches,parser):
     return else_instr_t(parser.ifs)
