@@ -6,6 +6,8 @@ class exec_t:
     def __init__(self):
         self.return_address = None
         self.next_instr = None
+        self.flgs=[]
+        self.rqst_flgs=[]
 
     def execute(self,stack,instr):
         """
@@ -14,6 +16,12 @@ class exec_t:
         self.next_instr = instr
         while self.next_instr:
             self.next_instr.execute(stack,self)
+            # Remove set flags
+            self.flgs=[]
+            # Check if flag sets requested and put them in flags
+            for flg in self.rqst_flgs:
+                self.flgs.append(flg)
+            self.rqst_flgs=[]
             # If no more next_instr, check if there's a return address, and jump
             # there if there is
             if (not self.next_instr) and self.return_address:

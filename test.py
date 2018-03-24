@@ -34,6 +34,8 @@ progs=[
     ([[1,2,3],[[4,5],[6,7]]],'÷',[[[1/4,1/5],[2/6,2/7],[3/4,3/5]]],None),
     ([[[1,2,3]],[[4,5],[6,7]]],'÷',[[[1/4,2/5,3/4]]],None),
     ([[[4,5],[6,7]],[1,2,3]],'÷',[[[4/1,5/1],[6/2,7/2]]],None),
+    ([[1,2],[3,4,5]],'∘+',[[[4,5,6],[5,6,7]]],None),
+    ([[1,2],[3,4,5]],'+',[[4,6]],None),
 ]
 
 passed=True
@@ -52,9 +54,10 @@ for st,pr,res,excpt in progs:
         print(res,end='')
         print("\tgot ",end='')
         print(st)
+        return passed
     if excpt:
         try:
-            _inner(passed)
+            passed=_inner(passed)
             passed &= False
             print("Failed")
         except excpt as e:
@@ -62,7 +65,7 @@ for st,pr,res,excpt in progs:
             print("Caught exception: ",end="")
             print(e)
     else:
-        _inner(passed)
+        passed=_inner(passed)
 
 print()
 if passed:

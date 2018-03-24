@@ -58,6 +58,11 @@ cmd_parsers = [
         '(×)',
         operators.dyad_instr_constr
     ),
+    cmd_parser_t(
+        'OUTER',
+        '(∘)',
+        operators.outerop_instr_constr
+    ),
 ]
 
 class parser_t:
