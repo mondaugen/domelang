@@ -3,6 +3,7 @@ import number
 import conditional
 from instruction import *
 import operators
+import indexing
 
 # These are stored in the order that they are matched against. The first
 # one to match is executed.
@@ -62,6 +63,16 @@ cmd_parsers = [
         'OUTER',
         '(∘)',
         operators.outerop_instr_constr
+    ),
+    cmd_parser_t(
+        'SETAT',
+        '(\[)',
+        indexing.setat_instr_constr
+    ),
+    cmd_parser_t(
+        'GETAT',
+        '(\])',
+        indexing.getat_instr_constr
     ),
 ]
 
