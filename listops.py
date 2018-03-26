@@ -1,17 +1,17 @@
 from instruction import *
+import common
+import indexing
 
-class listpop_t(instr_t):
+class listpop_t(indexing.getat_t):
+    """
+    This is just syntactic sugar for -1].
+    """
     def execute(self,stack,exec_env):
         if len(stack) < 1:
             instr_t.execute(self,stack,exec_env)
             return
-        if type(stack[-1]) != list:
-            instr_t.execute(self,stack,exec_env)
-            return
-        x=stack.pop()
-        stack.append(x[:-1])
-        stack.append(x[-1])
-        instr_t.execute(self,stack,exec_env)
+        stack=common.stack_push(stack,-1)
+        indexing.getat_t.execute(self,stack,exec_env)
 
 def listpop_instr_contr(matches,parser):
     return listpop_t()
@@ -29,14 +29,14 @@ class listpush_t(instr_t):
             return
         x=stack.pop()
         if len(stack) == 0:
-            stack.append([x])
+            stack=common.stack_push(stack,[x])
             instr_t.execute(self,stack,exec_env)
             return
         y=stack.pop()
         if type(y) != list:
             y=[y]
         y.append(x)
-        stack.append(y)
+        stack=common.stack_push(stack,y)
         instr_t.execute(self,stack,exec_env)
 
 def listpush_instr_contr(matches,parser):

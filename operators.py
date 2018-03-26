@@ -18,22 +18,32 @@ class _binary_operator_vtable:
     def nn(l,r,op,outer):
         return op(l,r)
     def nl(l,r,op,outer):
+        if len(r) == 0:
+            return None
         return [ op(l,x) for x in r ]
     def nL(l,r,op,outer):
         return [ binary_operator(l,x) for x in r ]
     def ln(l,r,op,outer):
+        if len(l) == 0:
+            return None
         return [ op(x,r) for x in l ]
     def ll(l,r,op,outer):
+        if len(l) == 0 or len(r) == 0:
+            return None
         if outer:
             return _binary_operator_vtable.outer_rhs(l,r,op,outer)
         return _binary_operator_vtable.cycle_rhs(l,r,op,outer)
     def lL(l,r,op,outer):
+        if len(l) == 0:
+            return None
         if outer:
             return _binary_operator_vtable.outer_rhs(l,r,op,outer)
         return _binary_operator_vtable.cycle_rhs(l,r,op,outer)
     def Ln(l,r,op,outer):
         return [ binary_operator(x,r) for x in l ]
     def Ll(l,r,op,outer):
+        if len(r) == 0:
+            return None
         if outer:
             return _binary_operator_vtable.outer_rhs(l,r,op,outer)
         return _binary_operator_vtable.cycle_rhs(l,r,op,outer)
@@ -74,7 +84,7 @@ class dyad_t(instr_t):
             r=stack.pop()
             l=stack.pop()
             outer=(execflags.OUTEROP in exec_env.flgs)
-            stack.append(binary_operator(l,r,self.op,outer))
+            stack=common.stack_push(stack,binary_operator(l,r,self.op,outer))
         instr_t.execute(self,stack,exec_env)
 
 def dyad_instr_constr(matches,parser):
@@ -90,3 +100,14 @@ class outerop_t(instr_t):
 
 def outerop_instr_constr(matches,parser):
     return outerop_t()
+
+def opmod_t(instr_t):
+    """
+    Class allowing operator modification.
+    """
+    def execute(self,stack,exec_env):
+        exec_env.rqst_flgs.append(execflags.OPMOD)
+        instr_t.execute(self,stack,exec_env)
+
+def opmod_instr_constr(matches,parser):
+    return opmod_t()

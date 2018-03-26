@@ -7,14 +7,18 @@ __doc__="""
 Operators for getting and setting elements of lists.
 """
 
-class _vindex_set_ftable:
+class _vindex_set_vtable:
     def nnn(l,m,r):
         return r
     def nnl(l,m,r):
+        if len(r) == 0:
+            return None
         return r[int(round(0))]
     def nln(l,m,r):
         return r
     def nll(l,m,r):
+        if len(r) == 0:
+            return None
         return r[-1]
     def nlL(l,m,r):
         return l
@@ -25,23 +29,35 @@ class _vindex_set_ftable:
     def nLL(l,m,r):
         return l
     def lnn(l,m,r):
+        if len(l) == 0:
+            return None
         l[int(round(m))%len(l)]=r
         return l
     def lnl(l,m,r):
+        if len(l) == 0:
+            return None
         l[int(round(m))%len(l)]=r
         return l
     def lnL(l,m,r):
+        if len(l) == 0:
+            return None
         l[int(round(m))%len(l)]=r
         return l
     def lln(l,m,r):
+        if len(l) == 0:
+            return None
         for i in m:
             l[int(round(i))%len(l)]=r
         return l
     def lll(l,m,r):
+        if len(l) == 0:
+            return None
         for a,b in zip(m,cycle(r)):
             l[int(round(a))%len(l)]=b
         return l
     def llL(l,m,r):
+        if len(l) == 0:
+            return None
         for a,b in zip(m,cycle(r)):
             l[int(round(a))%len(l)]=b
         return l
@@ -58,43 +74,61 @@ class _vindex_set_ftable:
             l=vindex_set(l,a,b)
         return l
     def Lnn(l,m,r):
+        if len(l) == 0:
+            return None
         for i,a in enumerate(l):
             l[int(round(i))%len(l)]=vindex_set(a,m,r)
         return l
     def Lnl(l,m,r):
+        if len(l) == 0:
+            return None
         l[int(round(m))%len(l)]=r
         return l
     def LnL(l,m,r):
+        if len(l) == 0:
+            return None
         l[int(round(m))%len(l)]=r
         return l
     def Lln(l,m,r):
+        if len(l) == 0:
+            return None
         for i,a in enumerate(l):
             l[int(round(i))%len(l)]=vindex_set(a,m,r)
         return l
     def Lll(l,m,r):
+        if len(l) == 0:
+            return None
         for i,a in enumerate(l):
             l[int(round(i))%len(l)]=vindex_set(a,m,r)
         return l
     def LlL(l,m,r):
+        if len(l) == 0:
+            return None
         for i,(a,b) in enumerate(zip(l,cycle(r))):
             l[int(round(i))%len(l)]=vindex_set(a,m,b)
         return l
     def LLn(l,m,r):
+        if len(l) == 0:
+            return None
         for i,(a,b) in enumerate(zip(l,cycle(m))):
             l[int(round(i))%len(l)]=vindex_set(a,b,r)
         return l
     def LLl(l,m,r):
+        if len(l) == 0:
+            return None
         for i,(a,b) in enumerate(zip(l,cycle(m))):
             l[int(round(i))%len(l)]=vindex_set(a,b,r)
         return l
     def LLL(l,m,r):
+        if len(l) == 0:
+            return None
         for i,(a,b,c) in enumerate(zip(l,cycle(m),cycle(r))):
             l[int(round(i))%len(l)]=vindex_set(a,b,c)
         return l
 
 def vindex_set(l,m,r):
     tc=''.join(map(common.typecode,[l,m,r]))
-    return getattr(_vindex_set_ftable,tc)(l,m,r)
+    return getattr(_vindex_set_vtable,tc)(l,m,r)
 
 class setat_t(instr_t):
     def execute(self,stack,exec_env):
@@ -102,24 +136,32 @@ class setat_t(instr_t):
             r=stack.pop()
             m=stack.pop()
             l=stack.pop()
-            stack.append(vindex_set(l,m,r))
+            stack=common.stack_push(stack,vindex_set(l,m,r))
         instr_t.execute(self,stack,exec_env)
 
 def setat_instr_constr(matches,parser):
     return setat_t()
 
-class _vindex_get_ftable:
+class _vindex_get_vtable:
     def nn(l,r,outer):
         return l
     def ln(l,r,outer):
+        if len(l) == 0:
+            return None
         return l[int(round(r))%len(l)]
     def nl(l,r,outer):
+        if len(r) == 0:
+            return None
         return [l for _ in r]
     def nL(l,r,outer):
+        if len(r) == 0:
+            return None
         return [vindex_get(l,x,outer) for x in r]
     def Ln(l,r,outer):
         if outer:
             return [vindex_get(x,r,outer) for x in l]
+        if len(l) == 0:
+            return None
         return l[int(round(r))%len(l)]
     def ll(l,r,outer):
         return [l[int(round(x))%len(l)] for x in r]
@@ -128,6 +170,8 @@ class _vindex_get_ftable:
     def Ll(l,r,outer):
         if outer:
             return [vindex_get(x,r,outer) for x in l]
+        if len(l) == 0:
+            return None
         return [l[int(round(x))%len(l)] for x in r]
     def LL(l,r,outer):
         if outer:
@@ -136,7 +180,7 @@ class _vindex_get_ftable:
 
 def vindex_get(l,r,outer):
     tc=''.join(map(common.typecode,[l,r]))
-    return getattr(_vindex_get_ftable,tc)(l,r,outer)
+    return getattr(_vindex_get_vtable,tc)(l,r,outer)
 
 class getat_t(instr_t):
     def execute(self,stack,exec_env):
@@ -144,7 +188,7 @@ class getat_t(instr_t):
             r=stack.pop()
             l=stack.pop()
             outer=(execflags.OUTEROP in exec_env.flgs)
-            stack.append(vindex_get(l,r,outer))
+            stack=common.stack_push(stack,vindex_get(l,r,outer))
         instr_t.execute(self,stack,exec_env)
 
 def getat_instr_constr(matches,parser):

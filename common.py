@@ -1,5 +1,7 @@
 def list_depth(l,d):
     if type(l) == list:
+        if len(l) < 1:
+            return d+1
         return max(map(lambda m: list_depth(m,d+1),l))
     else:
         return d
@@ -49,3 +51,22 @@ def is_true(x):
     """
     return bool(x)
             
+def filter_none(x):
+    """
+    Filters out None but cannot filter out None if passed None as a function
+    will return None if it returns nothing. In other words, see stack_push for
+    how to use.
+    """
+    if type(x) == list:
+        r=[]
+        for _x in x:
+            if _x != None:
+                r.append(filter_none(_x))
+        return r
+    return x
+
+def stack_push(stack,tail):
+    if tail != None:
+        tail=filter_none(tail)
+        stack.append(tail)
+    return stack
