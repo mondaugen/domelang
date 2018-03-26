@@ -1,3 +1,4 @@
+import listops
 from common import *
 import number
 import conditional
@@ -73,6 +74,16 @@ cmd_parsers = [
         'GETAT',
         '(\])',
         indexing.getat_instr_constr
+    ),
+    cmd_parser_t(
+        'LISTPUSH',
+        '(\()',
+        listops.listpush_instr_contr
+    ),
+    cmd_parser_t(
+        'LISTPOP',
+        '(\))',
+        listops.listpop_instr_contr
     ),
 ]
 
