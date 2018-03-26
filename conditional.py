@@ -1,9 +1,17 @@
 from common import *
 from instruction import *
 
+def prepend_if(x,y):
+    y.next_if = x
+    return y
+
+def pop_if(x):
+    return (x,x.next_if)
+
 class if_instr_t(instr_t):
     def __init__(self):
         instr_t.__init__(self)
+        self.next_if = None
         self.else_instr = None
         self.endif_instr = None
     def execute(self,stack,exec_env):
@@ -19,7 +27,7 @@ class if_instr_t(instr_t):
 
 def if_instr_constr(matches,parser):
     newif = if_instr_t()
-    parser.ifs = prepend(parser.ifs,newif)
+    parser.ifs = prepend_if(parser.ifs,newif)
     return newif
 
 class else_instr_t(instr_t):
@@ -54,5 +62,5 @@ class endif_instr_t(instr_t):
 
 def endif_instr_constr(matches,parser):
     # else or endif statements after this should use the next if on the if stack
-    oldif,parser.ifs = pop(parser.ifs)
+    oldif,parser.ifs = pop_if(parser.ifs)
     return endif_instr_t(oldif)

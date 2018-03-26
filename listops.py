@@ -1,3 +1,5 @@
+import execflags
+from itertools import cycle
 from instruction import *
 import common
 import indexing
@@ -16,6 +18,44 @@ class listpop_t(indexing.getat_t):
 def listpop_instr_contr(matches,parser):
     return listpop_t()
 
+def listpush(l,r,outer):
+    tc=''.join(map(common.typecode,[l,r]))
+    return getattr(_listpush_vtable,tc)(l,r,outer)
+
+class _listpush_vtable:
+    def nn(l,r,outer):
+        return [l,r]
+    def ln(l,r,outer):
+        return l + [r]
+    def Ln(l,r,outer):
+        if outer:
+            return [ listpush(x,r,outer) for x in l ]
+        return l + [r]
+    def nl(l,r,outer):
+        return [l] + r
+    def ll(l,r,outer):
+        if outer:
+            for x in r:
+                l.append(x)
+            return l
+        return l + [r]
+    def Ll(l,r,outer):
+        if outer:
+            return [ listpush(x,y,outer) for x,y in zip(l,cycle(r)) ]
+        return l + [r]
+    def nL(l,r,outer):
+        if outer:
+            return [ listpush(l,x,outer) for x in r ]
+        return [l] + r
+    def lL(l,r,outer):
+        if outer:
+            return [ listpush(x,y,outer) for x,y in zip(l,cycle(r)) ]
+        return l + [r]
+    def LL(l,r,outer):
+        if outer:
+            return [ listpush(x,y,outer) for x,y in zip(l,cycle(r)) ]
+        return l + [r]
+
 class listpush_t(instr_t):
     def execute(self,stack,exec_env):
         """
@@ -33,9 +73,8 @@ class listpush_t(instr_t):
             instr_t.execute(self,stack,exec_env)
             return
         y=stack.pop()
-        if type(y) != list:
-            y=[y]
-        y.append(x)
+        outer=(execflags.OUTEROP in exec_env.flgs)
+        y=listpush(y,x,outer)
         stack=common.stack_push(stack,y)
         instr_t.execute(self,stack,exec_env)
 
