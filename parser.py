@@ -61,6 +61,31 @@ cmd_parsers = [
         operators.dyad_instr_constr
     ),
     cmd_parser_t(
+        'LT',
+        '(<)',
+        operators.dyad_instr_constr
+    ),
+    cmd_parser_t(
+        'GT',
+        '(>)',
+        operators.dyad_instr_constr
+    ),
+    cmd_parser_t(
+        'LTE',
+        '(≤)',
+        operators.dyad_instr_constr
+    ),
+    cmd_parser_t(
+        'GTE',
+        '(≥)',
+        operators.dyad_instr_constr
+    ),
+    cmd_parser_t(
+        'EQUALS',
+        '(=)',
+        operators.dyad_instr_constr
+    ),
+    cmd_parser_t(
         'OUTER',
         '(∘)',
         operators.outerop_instr_constr
