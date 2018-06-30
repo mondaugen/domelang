@@ -32,11 +32,13 @@ class subroutexec_t(instr_t):
         # look up subroutine, if key not there or list empty, next_instr is set
         # to None
         try:
-            next_instr_list = exec_env.subroutines[self.subroutine_name]
+            next_instr_list = exec_env.routines[self.subroutine_name]
         except KeyError:
             next_instr_list = []
         try:
-            next_instr = next_instr_list.pop()
+            # Use the most recent subroutine definition (use SRPOP to get rid of
+            # it)
+            next_instr = next_instr_list[-1]
         except IndexError:
             next_instr = None
         # If next instruction found, push the current next_instr as the return

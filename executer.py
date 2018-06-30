@@ -8,16 +8,24 @@ class exec_t:
         self.next_instr = None
         self.flgs=[]
         self.rqst_flgs=[]
+        self.routines = None
 
-    def execute(self,stack,instrd):
+    def set_routines(self,instrd):
+        """
+        instrd is a dictionary of lists of instruction lists whose keys are the names of
+        the subroutines.
+        """
+        self.routines = instrd
+
+    def execute(self,stack):
         """
         Execute instructions, affecting the stack.
-        instrd is a dictionary of instruction lists whose keys are the names of
-        the subroutines.
         This starts by default in the subroutine "main" and calls other
         subroutines as they are encountered.
         """
-        self.next_instr = instrd['main'][-1]
+        if not self.routines:
+            raise Exception('No routines to execute')
+        self.next_instr = self.routines['main'][-1]
         while self.next_instr:
             self.next_instr.execute(stack,self)
             # Remove set flags
