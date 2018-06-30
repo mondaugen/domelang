@@ -162,7 +162,7 @@ class outerop_t(instr_t):
 def outerop_instr_constr(matches,parser):
     return outerop_t()
 
-def opmod_t(instr_t):
+class opmod_t(instr_t):
     """
     Class allowing operator modification.
     """

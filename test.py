@@ -1,7 +1,6 @@
 import parser
 import executer
 
-p=parser.parser_t()
 
 class NonException(Exception):
     """
@@ -96,11 +95,13 @@ progs=[
 
 passed=True
 for st,pr,res,excpt in progs:
+    # start with a fresh parser every time
+    p=parser.parser_t()
     ex=executer.exec_t()
-    first_instr=p.parse(pr)
+    p.parse(pr)
     def _inner(passed):
         # TODO: Why does passed have to get passed in but not the others?
-        ex.execute(st,first_instr)
+        ex.execute(st,p.routines)
         if st == res:
             print("Passed")
         else:

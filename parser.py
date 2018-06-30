@@ -5,6 +5,7 @@ import conditional
 from instruction import *
 import operators
 import indexing
+import subrout
 
 # These are stored in the order that they are matched against. The first
 # one to match is executed.
@@ -130,6 +131,21 @@ cmd_parsers = [
         '(√)',
         operators.monad_instr_constr
     ),
+    cmd_parser_t(
+        'SREXEC',
+        '(@)([a-zA-Z0-9_])',
+        subrout.subroutexec_instr_constr
+    ),
+    cmd_parser_t(
+        'SRDEFSTART',
+        '(\{)([a-zA-Z0-9_])',
+        subrout.subroutparse_constr
+    ),
+    cmd_parser_t(
+        'SRDEFEND',
+        '(\})',
+        subrout.subroutendparse_constr
+    )
 ]
 
 class parser_t:
@@ -140,20 +156,28 @@ class parser_t:
     def __init__(self):
         # A stack of if statments, the top one currently being parsed.
         self.ifs = None
+        # The dictionary of subroutines. This is a class member because the
+        # parser preserves its state between calls to parse.
+        # A subroutine must contain at least 1 instruction
+        self.routines={'main':[instr_t()]}
+        # The stack of last instructions, so that when the definition of a new
+        # instruction is invoked, the old definition is pushed and saved. When
+        # '}' encountered, it is continued.
+        self.last_instr_stack=[]
+        self.last_instr = self.routines['main'][-1]
     
     def parse(self,cmds):
         """
-        Parse the commands in string cmds and return the head of a list of
-        instructions that can be executed by an executer.
+        Parse the commands in string cmds and update the dictionary of lists of
+        instruction lists that can be executed by an executer (self.routines). The keys of this
+        list are the subroutine names.
+        Initially we start on the instruction 'main'
         """
-        # The first instruction in the program
-        first_instr=None
-        # The last instruction in the program
-        last_instr=None
 
         while cmds:
             matched = False
             for cmdp in cmd_parsers:
+                # match the instruction token(s)
                 m=cmdp.regex.match(cmds)
                 if m:
                     print(m)
@@ -161,20 +185,17 @@ class parser_t:
                     newinstr = None
                     if cmdp.instr_constr:
                         newinstr = cmdp.instr_constr(m.groups(),self)
+                    if not self.last_instr:
+                        # This means that parsing was prematurely terminated, so
+                        # we quit
+                        return
                     if newinstr:
                         # check if newinstr because some don't return
                         # instructions, like NOP
-                        if last_instr:
-                            last_instr = append(last_instr,newinstr)
-                        else:
-                            last_instr = newinstr
-                        if not first_instr:
-                            first_instr = last_instr
+                        self.last_instr = append(self.last_instr,newinstr)
                     cmds=cmds[m.end(0):]
                     matched = True
                     break
             if not matched:
                 print("Error: no match for %s" % (cmds,))
                 break
-        return first_instr
-

@@ -4,16 +4,20 @@ class exec_t:
     """
 
     def __init__(self):
-        self.return_address = None
+        self.return_address = []
         self.next_instr = None
         self.flgs=[]
         self.rqst_flgs=[]
 
-    def execute(self,stack,instr):
+    def execute(self,stack,instrd):
         """
         Execute instructions, affecting the stack.
+        instrd is a dictionary of instruction lists whose keys are the names of
+        the subroutines.
+        This starts by default in the subroutine "main" and calls other
+        subroutines as they are encountered.
         """
-        self.next_instr = instr
+        self.next_instr = instrd['main'][-1]
         while self.next_instr:
             self.next_instr.execute(stack,self)
             # Remove set flags
@@ -24,8 +28,8 @@ class exec_t:
             self.rqst_flgs=[]
             # If no more next_instr, check if there's a return address, and jump
             # there if there is
-            if (not self.next_instr) and self.return_address:
-                self.next_instr,self.return_address = pop(self.return_address)
+            if (not self.next_instr) and (len(self.return_address) > 0):
+                self.next_instr = self.return_address.pop()
         # No more instructions, we are done
         return
 
