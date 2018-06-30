@@ -110,6 +110,26 @@ cmd_parsers = [
         '(\))',
         listops.listpop_instr_contr
     ),
+    cmd_parser_t(
+        'NOT',
+        '(¬)',
+        operators.monad_instr_constr
+    ),
+    cmd_parser_t(
+        'CEIL',
+        '(⌉)',
+        operators.monad_instr_constr
+    ),
+    cmd_parser_t(
+        'FLOOR',
+        '(⌋)',
+        operators.monad_instr_constr
+    ),
+    cmd_parser_t(
+        'SQRT',
+        '(√)',
+        operators.monad_instr_constr
+    ),
 ]
 
 class parser_t:

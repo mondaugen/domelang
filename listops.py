@@ -23,6 +23,7 @@ def listpush(l,r,outer):
     return getattr(_listpush_vtable,tc)(l,r,outer)
 
 class _listpush_vtable:
+    # TODO Notice it's impossible to make a list of length 1
     def nn(l,r,outer):
         return [l,r]
     def ln(l,r,outer):

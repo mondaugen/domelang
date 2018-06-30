@@ -148,7 +148,7 @@ class monad_t(instr_t):
             stack=common.stack_push(stack,unary_operator(a,self.op))
         instr_t.execute(self,stack,exec_env)
 
-def monad_instr_contr(matches,parser):
+def monad_instr_constr(matches,parser):
     return monad_t(_monad_table[matches[0]])
 
 class outerop_t(instr_t):
