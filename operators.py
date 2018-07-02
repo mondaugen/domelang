@@ -113,7 +113,7 @@ class _unary_operator_vtable:
     def l(a,op):
         return [ op(x) for x in a ]
     def L(a,op):
-        return [ unary_operator(x) for x in a ]
+        return [ unary_operator(x,op) for x in a ]
 
 _monad_table = {
         '¬': lambda x: int(not x),
