@@ -17,7 +17,7 @@ class exec_t:
         """
         self.routines = instrd
 
-    def execute(self,stack):
+    def execute(self,stack,show_stack=False):
         """
         Execute instructions, affecting the stack.
         This starts by default in the subroutine "main" and calls other
@@ -28,6 +28,8 @@ class exec_t:
         self.next_instr = self.routines['main'][-1]
         while self.next_instr:
             self.next_instr.execute(stack,self)
+            if show_stack:
+                print(stack)
             # Remove set flags
             self.flgs=[]
             # Check if flag sets requested and put them in flags

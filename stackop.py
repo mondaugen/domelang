@@ -39,3 +39,18 @@ class stack_swap_t(instr_t):
 
 def stack_swap_instr_constr(matches,parser):
     return stack_swap_t()
+
+class stack_drop_t(instr_t):
+    """
+    Discard the last stack item.
+    """
+    def __init__(self):
+        instr_t.__init__(self)
+    def execute(self,stack,exec_env):
+        if len(stack) >= 1:
+            a=stack.pop()
+            del(a)
+        instr_t.execute(self,stack,exec_env)
+
+def stack_drop_instr_constr(matches,parser):
+    return stack_drop_t()

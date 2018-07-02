@@ -101,15 +101,13 @@ progs=[
     # subroutine recursion
     ([],'{a1-?@a»}10@a',[0],None),
     # bounce back and forth
-    # TODO: In order to do this we need to be able to double to stack bottom and
-    # that means deep copies of lists!
-    #([],'{b2-d10≤?@a»}{a3+@b}0@a',[11],None),
+    ([],'{b2- ‡10≤?↓@a¦↓»}{a3+@b}0@a',[11],None),
     # ([],'{a@a}@a',[0],None), # this program should never halt
-    ([[[1,2,3],[4,5,6]]],'d1]1 9[1⇔[',
+    ([[[1,2,3],[4,5,6]]],'‡1]1 9[1⇔[',
             [[[1,2,3],[4,9,6]]],None),
-    ([[[1,2,3],[4,5,6]]],'d0]1 9[0⇔[',
+    ([[[1,2,3],[4,5,6]]],'‡0]1 9[0⇔[',
             [[[1,9,3],[4,5,6]]],None),
-    ([[[[1,2],[3,4]],[[5,6],[7,8]]]],'d1]d0]d1]3+1⇔[0⇔[1⇔[',
+    ([[[[1,2],[3,4]],[[5,6],[7,8]]]],'‡1]‡0]‡1]3+1⇔[0⇔[1⇔[',
         [[[[1,2],[3,4]],[[5,9],[7,8]]]],None),
 ]
 
@@ -123,7 +121,7 @@ for st,pr,res,excpt in progs:
         # TODO: Why does passed have to get passed in but not the others?
         ex.set_routines(p.routines)
         #print(ex.routines)
-        ex.execute(st)
+        ex.execute(st,show_stack=True)
         #print(ex.routines)
         if st == res:
             print("Passed")

@@ -149,14 +149,19 @@ cmd_parsers = [
     ),
     cmd_parser_t(
         'STACKDUPL',
-        '(d)',
+        '(‡)',
         stackop.stack_dupl_instr_constr
     ),
     cmd_parser_t(
         'STACKSWAP',
         '(⇔)',
         stackop.stack_swap_instr_constr
-    )
+    ),
+    cmd_parser_t(
+        'STACKDROP',
+        '(↓)',
+        stackop.stack_drop_instr_constr
+    ),
 ]
 
 class parser_t:
