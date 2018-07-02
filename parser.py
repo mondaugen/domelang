@@ -6,6 +6,7 @@ from instruction import *
 import operators
 import indexing
 import subrout
+import stackop
 
 # These are stored in the order that they are matched against. The first
 # one to match is executed.
@@ -13,12 +14,12 @@ import subrout
 cmd_parsers = [
     cmd_parser_t(
         'FLOAT',
-        '([-+]?\d+\.\d*([eE][-+]?\d+|))',
+        '([-]?\d+\.\d*([eE][-+]?\d+|))',
         number.float_instr_constr
     ),
     cmd_parser_t(
         'INT',
-        '([-+]?\d+)',
+        '([-]?\d+)',
         number.int_instr_constr
     ),
     cmd_parser_t(
@@ -145,6 +146,16 @@ cmd_parsers = [
         'SRDEFEND',
         '(\})',
         subrout.subroutendparse_constr
+    ),
+    cmd_parser_t(
+        'STACKDUPL',
+        '(d)',
+        stackop.stack_dupl_instr_constr
+    ),
+    cmd_parser_t(
+        'STACKSWAP',
+        '(⇔)',
+        stackop.stack_swap_instr_constr
     )
 ]
 
@@ -181,6 +192,7 @@ class parser_t:
                 m=cmdp.regex.match(cmds)
                 if m:
                     print(m)
+                    print(m.re.pattern)
                     print(m.groups())
                     newinstr = None
                     if cmdp.instr_constr:
