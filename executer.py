@@ -9,6 +9,7 @@ class exec_t:
         self.flgs=[]
         self.rqst_flgs=[]
         self.routines = None
+        self.registers = dict()
 
     def set_routines(self,instrd):
         """

@@ -7,6 +7,7 @@ import operators
 import indexing
 import subrout
 import stackop
+import registers
 
 # These are stored in the order that they are matched against. The first
 # one to match is executed.
@@ -161,6 +162,16 @@ cmd_parsers = [
         'STACKDROP',
         '(↓)',
         stackop.stack_drop_instr_constr
+    ),
+    cmd_parser_t(
+        'REGPUSH',
+        '(′)([a-zA-Z_])',
+        registers.register_push_exec_instr_constr
+    ),
+    cmd_parser_t(
+        'REGPOP',
+        '(`)([a-zA-Z_])',
+        registers.register_pop_exec_instr_constr
     ),
 ]
 
