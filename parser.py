@@ -186,12 +186,15 @@ class parser_t:
         # The dictionary of subroutines. This is a class member because the
         # parser preserves its state between calls to parse.
         # A subroutine must contain at least 1 instruction
-        self.routines={'main':[instr_t()]}
         # The stack of last instructions, so that when the definition of a new
         # instruction is invoked, the old definition is pushed and saved. When
         # '}' encountered, it is continued.
         self.last_instr_stack=[]
-        self.last_instr = self.routines['main'][-1]
+        self.last_instr = None #TODO What is this initially?
+        # The subroutine that is currently being defined. When the program runs
+        # the first instruction will push the "main" scope which is the
+        # outer-most scope.
+        self.cur_subrout_def = [subrout.subroutdef_t('main',subrout.srscopepush_instr_t())]
     
     def parse(self,cmds):
         """

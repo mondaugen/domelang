@@ -1,3 +1,5 @@
+import subrout
+
 class exec_t:
     """
     The run-time execution environment.
@@ -10,6 +12,7 @@ class exec_t:
         self.rqst_flgs=[]
         self.routines = None
         self.registers = dict()
+        self.scopes = None
 
     def set_routines(self,instrd):
         """
