@@ -1,3 +1,6 @@
+from common import *
+from instruction import *
+
 class subroutscope_t:
     """
     Contains a set of subroutines valid in a particular scope.
@@ -51,4 +54,94 @@ def subroutparse_constr(matches,parser):
     # return None because we don't want parser to append this instruction as
     # we've set a new self.last_instr
     return None
+
+class subroutdefinstr_t(instr_t):
+    """
+    Created when a full definition of a subroutine is finished.
+    When executed, this pushes the definition of this subroutine, replacing the
+    old definition (if there was one). This is the subroutine that is executed
+    by this name until another definition by the same name is pushed.
+    """
+
+    def __init__(self,name,first_instr):
+        """
+        name is the name of the routine
+        first_instr is the first instruction in its instruction list
+        """
+        self.name = name
+        self.first_instr = first_instr
+
+    def execute(self,stack,exec_env):
+        """
+        replaces definition in current scope with this subroutine's definition
+        """
+        if not exec_env.scopes:
+            raise Exception("No scope in execution environment!")
+        exec_env.scopes.subroutines[self.name]=self.first_instruction
+        instr_t.execute(self,stack,exec_env)
+
+def subroutdefinstr_constr(matches,parser):
+    """
+    Called when } encountered (canonically).
+
+    Adds a scope pop instruction as the last instruction of the subroutine
+    currently being parsed because that scope is discarded when we leave the
+    subroutine.
+
+    Then we get the last instruction on the parser's last_instr_stack and we
+    continue on with adding instructions to this list. The first instruction we
+    add is the subroutdefinstr_t holding the defintion of the most recently
+    parsed subroutine.
+
+    Then we pop the subroutdef_t off the def stack because we are done with that
+    routine and now need to continue with the next up the stack.
+    """
+    # Add scope pop instruction
+    parser.last_instr = append(parser.last_instr,srscopepop_instr_t())
+    # Get the last instruction from the outer scope before this subroutine
+    # definition was started. Don't worry we don't lose the old
+    # parser.last_instr because this is also the last instruction in the
+    # instruction list held in the first_instr field of subroutdef_t
+    parser.last_instr = parser.last_instr_stack.pop()
+    # pop the last subroutine definition we were just working on, because we are
+    # done with it now
+    last_def = parser.cur_subrout_def.pop()
+    # the return a subroutdefinstr_t containing the name and subroutine from
+    # last_def
+    # TODO not sure if I can call del on last_def because we still want its
+    # inner fields in the new subroutdefinstr_t
+    return subroutdefinstr_t(last_def.name,last_def.first_instr)
+
+def subroutexecinstr_t(instr_t):
+    """
+    Created and appended to instruction list  when @\w encountered (canonically)
+
+    When executed, it searches up the scopes for the closest subroutine
+    definition with its name. If such a routine is found, the next instruction
+    is saved as the return address and next instruction is set to the first
+    instruction of the found subroutine.
+    """
+    def __init__(self,name):
+        self.name = name
+        instr_t.__init__(self)
+
+    def execute(self,stack,exec_env):
+        # get next instruction by executing superclass's execute function
+        instr_t.execute(self,stack,exec_env)
+        # search up scope tree to look up subroutine, if key not there or list
+        # empty, next_instr is set to None
+        scope = exec_env.scopes
+        next_instr = None
+        while scope:
+            if self.name in scope.subroutines.keys():
+                next_instr = scope.subroutines[self.name]
+                break
+            else:
+                scope = scope.parent
+        if next_instr:
+            if exec_env.next_instr:
+                exec_env.return_address.append(exec_env.next_instr)
+            exec_env.next_instr = next_instr
+        # Otherwise we just continue to the next instruction
+
 
