@@ -14,22 +14,11 @@ class exec_t:
         self.registers = dict()
         self.scopes = None
 
-    def set_routines(self,instrd):
-        """
-        instrd is a dictionary of lists of instruction lists whose keys are the names of
-        the subroutines.
-        """
-        self.routines = instrd
-
-    def execute(self,stack,show_stack=False):
+    def execute(self,stack,first_instr,show_stack=False):
         """
         Execute instructions, affecting the stack.
-        This starts by default in the subroutine "main" and calls other
-        subroutines as they are encountered.
         """
-        if not self.routines:
-            raise Exception('No routines to execute')
-        self.next_instr = self.routines['main'][-1]
+        self.next_instr = first_instr
         while self.next_instr:
             self.next_instr.execute(stack,self)
             if show_stack:

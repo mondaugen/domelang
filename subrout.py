@@ -1,79 +1,165 @@
-__doc__="""
-Subroutines
-
-Parsing:
-The way this works is when ({)([a-z]) is encountered by the parser, it pushes
-the current subroutine and changes to
-start placing instructions under the key \2 (the match that is ([a-z])). When
-'}' is encountered, it returns to the previous subroutine and parses. If that
-subroutine is the last one on the stack, parsing is halted prematurely.
-
-Execution:
-The executor is passed to the instruction contructor, so if a subroutine is
-found, this pushes the next
-instruction on the return stack and sets the next instruction to the first
-instruction of the subroutine. If no subroutine is found it is as if NOP is
-executed.
-"""
-
+from common import *
 from instruction import *
 
-class subroutexec_t(instr_t):
+class subroutscope_t:
     """
-    Class executing subroutines.
+    Contains a set of subroutines valid in a particular scope.
+    This is used by the executer to keep track of what routines are in scope
+    and to make it easy to "pop" routines that are no longer in scope when a
+    routine finishes.
     """
-    def __init__(self,subroutine_name):
-        self.subroutine_name = subroutine_name
+    def __init__(self,parent):
+        self.parent = parent
+        self.subroutines = dict()
+
+class srscopepush_instr_t(instr_t):
+
+    def execute(self,stack,exec_env):
+        """
+        starts a new scope
+        """
+        exec_env.scopes = subroutscope_t(exec_env.scopes)
+        instr_t.execute(self,stack,exec_env)
+
+class srscopepop_instr_t(instr_t):
+
+    def execute(self,stack,exec_env):
+        """
+        Gets rid of the current scope so the routines in it are no longer
+        accessible.
+        """
+        old_scopes = exec_env.scopes
+        exec_env.scopes = exec_env.scopes.parent
+        del(old_scopes)
+
+class subroutdef_t:
+    """
+    This is created and exists while a subroutine is being parsed.
+    It keeps track of the subroutine's name and instructions.
+    """
+    def __init__(self,name,first_instr):
+        self.name = name
+        self.first_instr = first_instr
+        #self._current_instr = self.first_instr
+
+def subroutparse_newdef(name,parser):
+    """
+    Made available so that the parser can define custom routines with arbitrary
+    names.
+    """
+    # push the last instruction of the routine parser was just working on
+    if (parser.last_instr):
+        parser.last_instr_stack.append(parser.last_instr)
+    # push a new subroutine definition structure by the subroutine's name and
+    # with a scope push as first instruction
+    parser.cur_subrout_def.append(subroutdef_t(name,srscopepush_instr_t()))
+    # set its instruction as last_instr so that the parser will append
+    # instructions there
+    parser.last_instr = parser.cur_subrout_def[-1].first_instr
+    # return None because we don't want parser to append this instruction as
+    # we've set a new self.last_instr
+    return None
+
+def subroutparse_constr(matches,parser):
+    return subroutparse_newdef(matches[1],parser)
+
+class subroutdefinstr_t(instr_t):
+    """
+    Created when a full definition of a subroutine is finished.
+    When executed, this pushes the definition of this subroutine, replacing the
+    old definition (if there was one). This is the subroutine that is executed
+    by this name until another definition by the same name is pushed.
+    """
+
+    def __init__(self,name,first_instr):
+        """
+        name is the name of the routine
+        first_instr is the first instruction in its instruction list
+        """
+        self.name = name
+        self.first_instr = first_instr
+
+    def execute(self,stack,exec_env):
+        """
+        replaces definition in current scope with this subroutine's definition
+        """
+        if not exec_env.scopes:
+            raise Exception("No scope in execution environment!")
+        exec_env.scopes.subroutines[self.name]=self.first_instruction
+        instr_t.execute(self,stack,exec_env)
+
+def subroutdefinstr_enddef(parser):
+    """
+    Called when } encountered (canonically).
+
+    Adds a scope pop instruction as the last instruction of the subroutine
+    currently being parsed because that scope is discarded when we leave the
+    subroutine.
+
+    Then we get the last instruction on the parser's last_instr_stack and we
+    continue on with adding instructions to this list. The first instruction we
+    add is the subroutdefinstr_t holding the defintion of the most recently
+    parsed subroutine.
+
+    Then we pop the subroutdef_t off the def stack because we are done with that
+    routine and now need to continue with the next up the stack.
+
+    Done as a function separate from the constr function becuase the parser
+    calls this to end the outermost scope.
+    """
+    # Add scope pop instruction
+    parser.last_instr = append(parser.last_instr,srscopepop_instr_t())
+    # Get the last instruction from the outer scope before this subroutine
+    # definition was started. Don't worry we don't lose the old
+    # parser.last_instr because this is also the last instruction in the
+    # instruction list held in the first_instr field of subroutdef_t
+    parser.last_instr = parser.last_instr_stack.pop()
+    # pop the last subroutine definition we were just working on, because we are
+    # done with it now
+    last_def = parser.cur_subrout_def.pop()
+    # the return a subroutdefinstr_t containing the name and subroutine from
+    # last_def
+    # TODO not sure if I can call del on last_def because we still want its
+    # inner fields in the new subroutdefinstr_t
+    return subroutdefinstr_t(last_def.name,last_def.first_instr)
+
+def subroutdefinstr_constr(matches,parser):
+    return subroutdefinstr_enddef(parser)
+
+def subroutexecinstr_t(instr_t):
+    """
+    Created and appended to instruction list  when @\w encountered (canonically)
+
+    When executed, it searches up the scopes for the closest subroutine
+    definition with its name. If such a routine is found, the next instruction
+    is saved as the return address and next instruction is set to the first
+    instruction of the found subroutine.
+    """
+    def __init__(self,name):
+        self.name = name
         instr_t.__init__(self)
 
     def execute(self,stack,exec_env):
-        # get next instruction
+        # get next instruction by executing superclass's execute function
         instr_t.execute(self,stack,exec_env)
-        # look up subroutine, if key not there or list empty, next_instr is set
-        # to None
-        try:
-            next_instr_list = exec_env.routines[self.subroutine_name]
-        except KeyError:
-            next_instr_list = []
-        try:
-            # Use the most recent subroutine definition (use SRPOP to get rid of
-            # it)
-            next_instr = next_instr_list[-1]
-        except IndexError:
-            next_instr = None
-        # If next instruction found, push the current next_instr as the return
-        # address (if not None) and update next_instr to the found instruction
+        # search up scope tree to look up subroutine, if key not there or list
+        # empty, next_instr is set to None
+        scope = exec_env.scopes
+        next_instr = None
+        while scope:
+            if self.name in scope.subroutines.keys():
+                next_instr = scope.subroutines[self.name]
+                break
+            else:
+                scope = scope.parent
         if next_instr:
             if exec_env.next_instr:
                 exec_env.return_address.append(exec_env.next_instr)
             exec_env.next_instr = next_instr
         # Otherwise we just continue to the next instruction
 
-def subroutexec_instr_constr(matches,parser):
-    return subroutexec_t(matches[1])
+def subroutexecinstr_create(name):
+    return subroutexecinstr_t(name)
 
-def subroutparse_constr(matches,parser):
-    """Called when it was indicated to start defining an instruction. """
-    # push the last instruction of the routine parser was just working on
-    parser.last_instr_stack.append(parser.last_instr)
-    # if no routine by this name, add a new entry to the dictionary
-    if matches[1] not in parser.routines.keys():
-        parser.routines[matches[1]]=[]
-    # add dummy first instruction (subroutines must contain at least 1
-    # instruction)
-    parser.routines[matches[1]].append(instr_t())
-    # set this as the new last instruction to which instructions will be
-    # appended
-    parser.last_instr = parser.routines[matches[1]][-1]
-    # return None because we don't want parser to append this instruction as
-    # we've set a new self.last_instr
-    return None
-
-def subroutendparse_constr(matches,parser):
-    """Called when we've finished defining a subroutine"""
-    try:
-        parser.last_instr = parser.last_instr_stack.pop()
-    except IndexError:
-        # No more instructions
-        parser.last_instr = None
-    return None
+def subroutexecinstr_constr(matches,parser):
+    return subroutexecinstr_create(matches[1])

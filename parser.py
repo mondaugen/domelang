@@ -136,7 +136,7 @@ cmd_parsers = [
     cmd_parser_t(
         'SREXEC',
         '(@)([a-zA-Z0-9_])',
-        subrout.subroutexec_instr_constr
+        subrout.subroutexecinstr_constr
     ),
     cmd_parser_t(
         'SRDEFSTART',
@@ -146,7 +146,7 @@ cmd_parsers = [
     cmd_parser_t(
         'SRDEFEND',
         '(\})',
-        subrout.subroutendparse_constr
+        subrout.subroutdefinstr_constr
     ),
     cmd_parser_t(
         'STACKDUPL',
@@ -191,19 +191,21 @@ class parser_t:
         # '}' encountered, it is continued.
         self.last_instr_stack=[]
         self.last_instr = None #TODO What is this initially?
-        # The subroutine that is currently being defined. When the program runs
-        # the first instruction will push the "main" scope which is the
-        # outer-most scope.
-        self.cur_subrout_def = [subrout.subroutdef_t('main',subrout.srscopepush_instr_t())]
+        self.cur_subrout_def = []
+
     
     def parse(self,cmds):
         """
         Parse the commands in string cmds and update the dictionary of lists of
         instruction lists that can be executed by an executer (self.routines). The keys of this
         list are the subroutine names.
-        Initially we start on the instruction 'main'
+        Initially we start on the instruction 'main' (see __init__)
         """
-
+        # When the program runs
+        # the first instruction will push the "main" scope which is the
+        # outer-most scope.
+        subrout.subroutparse_newdef("main",self)
+        first_instr = self.last_instr
         while cmds:
             matched = False
             for cmdp in cmd_parsers:
@@ -230,3 +232,11 @@ class parser_t:
             if not matched:
                 print("Error: no match for %s" % (cmds,))
                 break
+        # Finish main which should be the outer-most scope
+        self.last_instr = append(self.last_instr,
+                subrout.subroutdefinstr_enddef(self))
+        if len(self.cur_subrout_def) > 0:
+            raise Exception('Some routines have not been completed (missing closing "}" ?)')
+        # The last instruction executes the main routine
+        self.last_instr = append(self.last_instr,subrout.subroutexecinstr_create("main"))
+        return first_instr
