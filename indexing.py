@@ -131,6 +131,7 @@ def vindex_set(l,m,r):
     return getattr(_vindex_set_vtable,tc)(l,m,r)
 
 class setat_t(instr_t):
+    name = 'SETAT'
     def execute(self,stack,exec_env):
         if len(stack) >= 3:
             r=stack.pop()
@@ -183,6 +184,7 @@ def vindex_get(l,r,outer):
     return getattr(_vindex_get_vtable,tc)(l,r,outer)
 
 class getat_t(instr_t):
+    name = 'GETAT'
     def execute(self,stack,exec_env):
         if len(stack) >= 2:
             r=stack.pop()

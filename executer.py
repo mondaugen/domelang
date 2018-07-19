@@ -12,14 +12,17 @@ class exec_t:
         self.rqst_flgs=[]
         self.routines = None
         self.registers = dict()
-        self.scopes = None
+        # The outer most scope, has no parent
+        self.scopes = subrout.subroutscope_t(None)
 
-    def execute(self,stack,first_instr,show_stack=False):
+    def execute(self,stack,first_instr,show_stack=False,show_instr=False):
         """
         Execute instructions, affecting the stack.
         """
         self.next_instr = first_instr
         while self.next_instr:
+            if show_instr:
+                print(self.next_instr.name)
             self.next_instr.execute(stack,self)
             if show_stack:
                 print(stack)

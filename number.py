@@ -1,6 +1,7 @@
 from instruction import *
 
 class float_t(instr_t):
+    name = 'FLOAT'
     def __init__(self,f):
         instr_t.__init__(self)
         self.f = f
@@ -12,6 +13,7 @@ def float_instr_constr(matches,parser):
     return float_t(float(matches[0]))
 
 class int_t(instr_t):
+    name = 'INT'
     def __init__(self,i):
         instr_t.__init__(self)
         self.i = i

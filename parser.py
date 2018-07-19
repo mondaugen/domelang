@@ -14,27 +14,27 @@ import registers
 # The regular expressions should contain at least 1 group
 cmd_parsers = [
     cmd_parser_t(
-        'FLOAT',
+        number.float_t.name,
         '([-]?\d+\.\d*([eE][-+]?\d+|))',
         number.float_instr_constr
     ),
     cmd_parser_t(
-        'INT',
+        number.int_t.name,
         '([-]?\d+)',
         number.int_instr_constr
     ),
     cmd_parser_t(
-        'IF',
+        conditional.if_instr_t.name,
         '(\?)',
         conditional.if_instr_constr
     ),
     cmd_parser_t(
-        'ELSE',
+        conditional.else_instr_t.name,
         '(¦)',
         conditional.else_instr_constr
     ),
     cmd_parser_t(
-        'ENDIF',
+        conditional.endif_instr_t.name,
         '(»)',
         conditional.endif_instr_constr
     ),
@@ -44,132 +44,132 @@ cmd_parsers = [
         None
     ),
     cmd_parser_t(
-        'PLUS',
+        operators.dyad_t.name + '+',
         '(\+)',
         operators.dyad_instr_constr
     ),
     cmd_parser_t(
-        'MINUS',
+        operators.dyad_t.name + '-',
         '(-)',
         operators.dyad_instr_constr
     ),
     cmd_parser_t(
-        'DIVIDE',
+        operators.dyad_t.name + '÷',
         '(÷)',
         operators.dyad_instr_constr
     ),
     cmd_parser_t(
-        'TIMES',
+        operators.dyad_t.name + '×',
         '(×)',
         operators.dyad_instr_constr
     ),
     cmd_parser_t(
-        'LT',
+        operators.dyad_t.name + '<',
         '(<)',
         operators.dyad_instr_constr
     ),
     cmd_parser_t(
-        'GT',
+        operators.dyad_t.name + '>',
         '(>)',
         operators.dyad_instr_constr
     ),
     cmd_parser_t(
-        'LTE',
+        operators.dyad_t.name + '≤',
         '(≤)',
         operators.dyad_instr_constr
     ),
     cmd_parser_t(
-        'GTE',
+        operators.dyad_t.name + '≥',
         '(≥)',
         operators.dyad_instr_constr
     ),
     cmd_parser_t(
-        'EQUALS',
+        operators.dyad_t.name + '=',
         '(=)',
         operators.dyad_instr_constr
     ),
     cmd_parser_t(
-        'OUTER',
+        operators.outerop_t.name,
         '(∘)',
         operators.outerop_instr_constr
     ),
     cmd_parser_t(
-        'SETAT',
+        indexing.setat_t.name,
         '(\[)',
         indexing.setat_instr_constr
     ),
     cmd_parser_t(
-        'GETAT',
+        indexing.getat_t.name,
         '(\])',
         indexing.getat_instr_constr
     ),
     cmd_parser_t(
-        'LISTPUSH',
+        listops.listpush_t.name,
         '(\()',
         listops.listpush_instr_contr
     ),
     cmd_parser_t(
-        'LISTPOP',
+        listops.listpop_t.name,
         '(\))',
         listops.listpop_instr_contr
     ),
     cmd_parser_t(
-        'NOT',
+        operators.monad_t.name+'¬',
         '(¬)',
         operators.monad_instr_constr
     ),
     cmd_parser_t(
-        'CEIL',
+        operators.monad_t.name+'⌉',
         '(⌉)',
         operators.monad_instr_constr
     ),
     cmd_parser_t(
-        'FLOOR',
+        operators.monad_t.name+'⌋',
         '(⌋)',
         operators.monad_instr_constr
     ),
     cmd_parser_t(
-        'SQRT',
+        operators.monad_t.name+'√',
         '(√)',
         operators.monad_instr_constr
     ),
     cmd_parser_t(
-        'SREXEC',
+        subrout.subroutexecinstr_t.name,
         '(@)([a-zA-Z0-9_])',
         subrout.subroutexecinstr_constr
     ),
     cmd_parser_t(
-        'SRDEFSTART',
+        subrout.subroutparse_name,
         '(\{)([a-zA-Z0-9_])',
         subrout.subroutparse_constr
     ),
     cmd_parser_t(
-        'SRDEFEND',
+        subrout.subroutdefinstr_t.name,
         '(\})',
         subrout.subroutdefinstr_constr
     ),
     cmd_parser_t(
-        'STACKDUPL',
+        stackop.stack_dupl_t.name,
         '(‡)',
         stackop.stack_dupl_instr_constr
     ),
     cmd_parser_t(
-        'STACKSWAP',
+        stackop.stack_swap_t.name,
         '(⇔)',
         stackop.stack_swap_instr_constr
     ),
     cmd_parser_t(
-        'STACKDROP',
+        stackop.stack_drop_t.name,
         '(↓)',
         stackop.stack_drop_instr_constr
     ),
     cmd_parser_t(
-        'REGPUSH',
+        registers.register_push_exec_t.name,
         '(′)([a-zA-Z_])',
         registers.register_push_exec_instr_constr
     ),
     cmd_parser_t(
-        'REGPOP',
+        registers.register_pop_exec_t.name,
         '(`)([a-zA-Z_])',
         registers.register_pop_exec_instr_constr
     ),
@@ -205,7 +205,6 @@ class parser_t:
         # the first instruction will push the "main" scope which is the
         # outer-most scope.
         subrout.subroutparse_newdef("main",self)
-        first_instr = self.last_instr
         while cmds:
             matched = False
             for cmdp in cmd_parsers:
@@ -232,9 +231,10 @@ class parser_t:
             if not matched:
                 print("Error: no match for %s" % (cmds,))
                 break
-        # Finish main which should be the outer-most scope
-        self.last_instr = append(self.last_instr,
-                subrout.subroutdefinstr_enddef(self))
+        # Finish main which should be the outer-most scope and so there won't be
+        # any other first_instr
+        first_instr = subrout.subroutdefinstr_enddef(self)
+        self.last_instr = first_instr
         if len(self.cur_subrout_def) > 0:
             raise Exception('Some routines have not been completed (missing closing "}" ?)')
         # The last instruction executes the main routine

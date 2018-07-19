@@ -62,7 +62,7 @@ class _binary_operator_vtable:
 def _dyad_divide(x,y):
     return x/y
 
-_dyad_table = {
+dyad_table = {
     '+': lambda x,y: x+y,
     '-': lambda x,y: x-y,
     '÷': _dyad_divide,
@@ -89,6 +89,7 @@ class dyad_t(instr_t):
     """
     Class for binary operators. Operator op passed in upon creation.
     """
+    name = 'DYAD'
     def __init__(self,op):
         instr_t.__init__(self)
         self.op = op
@@ -102,7 +103,7 @@ class dyad_t(instr_t):
         instr_t.execute(self,stack,exec_env)
 
 def dyad_instr_constr(matches,parser):
-    return dyad_t(_dyad_table[matches[0]])
+    return dyad_t(dyad_table[matches[0]])
 
 class _unary_operator_vtable:
     """
@@ -138,6 +139,7 @@ class monad_t(instr_t):
     """
     Class for unary operators. Operator op passed in upon creation.
     """
+    name = 'MONAD'
     def __init__(self,op):
         instr_t.__init__(self)
         self.op = op
@@ -155,6 +157,7 @@ class outerop_t(instr_t):
     """
     Class flagging outer operator.
     """
+    name = 'OUTER'
     def execute(self,stack,exec_env):
         exec_env.rqst_flgs.append(execflags.OUTEROP)
         instr_t.execute(self,stack,exec_env)

@@ -5,6 +5,9 @@ class instr_t:
     An instruction.
     """
 
+    # All instances have this name, subclasses override with their method name
+    name = 'INSTR'
+
     def __init__(self):
         # The next instruction, named this way to work with list append, prepend
         # and pop "macros"
@@ -23,6 +26,9 @@ class instr_t:
         particular instructions depending on the contents of the stack.
         """
         exec_env.next_instr = self.next
+
+    def __str__(self):
+        return self.name
 
 class cmd_parser_t:
     """

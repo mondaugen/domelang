@@ -8,6 +8,7 @@ class listpop_t(indexing.getat_t):
     """
     This is just syntactic sugar for -1].
     """
+    name = 'LISTPUSH'
     def execute(self,stack,exec_env):
         if len(stack) < 1:
             instr_t.execute(self,stack,exec_env)

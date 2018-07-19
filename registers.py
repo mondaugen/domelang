@@ -27,6 +27,7 @@ class register_push_exec_t(instr_t):
     """
     Class executing register push instruction.
     """
+    name = 'REGPUSH'
     def __init__(self,register_name):
         self.register_name = register_name
         instr_t.__init__(self)
@@ -47,6 +48,7 @@ class register_pop_exec_t(instr_t):
     """
     Class executing register pop instruction.
     """
+    name = 'REGPOP'
     def __init__(self,register_name):
         self.register_name = register_name
         instr_t.__init__(self)

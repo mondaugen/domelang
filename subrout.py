@@ -14,6 +14,7 @@ class subroutscope_t:
 
 class srscopepush_instr_t(instr_t):
 
+    name = 'SRSCOPEPUSH'
     def execute(self,stack,exec_env):
         """
         starts a new scope
@@ -23,6 +24,7 @@ class srscopepush_instr_t(instr_t):
 
 class srscopepop_instr_t(instr_t):
 
+    name = 'SRSCOPEPOP'
     def execute(self,stack,exec_env):
         """
         Gets rid of the current scope so the routines in it are no longer
@@ -31,6 +33,7 @@ class srscopepop_instr_t(instr_t):
         old_scopes = exec_env.scopes
         exec_env.scopes = exec_env.scopes.parent
         del(old_scopes)
+        instr_t.execute(self,stack,exec_env)
 
 class subroutdef_t:
     """
@@ -41,6 +44,8 @@ class subroutdef_t:
         self.name = name
         self.first_instr = first_instr
         #self._current_instr = self.first_instr
+
+subroutparse_name = 'SRDEFSTART'
 
 def subroutparse_newdef(name,parser):
     """
@@ -71,11 +76,13 @@ class subroutdefinstr_t(instr_t):
     by this name until another definition by the same name is pushed.
     """
 
+    name = 'SRDEFEND'
     def __init__(self,name,first_instr):
         """
         name is the name of the routine
         first_instr is the first instruction in its instruction list
         """
+        instr_t.__init__(self)
         self.name = name
         self.first_instr = first_instr
 
@@ -116,8 +123,10 @@ def subroutdefinstr_enddef(parser):
     if len(parser.last_instr_stack) > 0:
         parser.last_instr = parser.last_instr_stack.pop()
     else:
-        # The program should be done at this point
-        parser.last_instr = None
+        # The program should be done at this point, so we put a dummy
+        # instruction so the parser has something to append the
+        # subroutdefinstr_t to (see what this function returns)
+        parser.last_instr = instr_t()
     # pop the last subroutine definition we were just working on, because we are
     # done with it now
     last_def = parser.cur_subrout_def.pop()
@@ -130,7 +139,7 @@ def subroutdefinstr_enddef(parser):
 def subroutdefinstr_constr(matches,parser):
     return subroutdefinstr_enddef(parser)
 
-def subroutexecinstr_t(instr_t):
+class subroutexecinstr_t(instr_t):
     """
     Created and appended to instruction list  when @\w encountered (canonically)
 
@@ -139,9 +148,10 @@ def subroutexecinstr_t(instr_t):
     is saved as the return address and next instruction is set to the first
     instruction of the found subroutine.
     """
+    name = 'SREXEC'
     def __init__(self,name):
-        self.name = name
         instr_t.__init__(self)
+        self.name = name
 
     def execute(self,stack,exec_env):
         # get next instruction by executing superclass's execute function

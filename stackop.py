@@ -8,6 +8,7 @@ class stack_dupl_t(instr_t):
     """
     Double the last stack item with a deep copy.
     """
+    name = 'STACKDUPL'
     def __init__(self):
         instr_t.__init__(self)
     def execute(self,stack,exec_env):
@@ -26,6 +27,7 @@ class stack_swap_t(instr_t):
     """
     Swap the last 2 stack items
     """
+    name = 'STACKSWAP'
     def __init__(self):
         instr_t.__init__(self)
     def execute(self,stack,exec_env):
@@ -44,6 +46,7 @@ class stack_drop_t(instr_t):
     """
     Discard the last stack item.
     """
+    name = 'STACKDROP'
     def __init__(self):
         instr_t.__init__(self)
     def execute(self,stack,exec_env):

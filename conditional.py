@@ -9,6 +9,7 @@ def pop_if(x):
     return (x,x.next_if)
 
 class if_instr_t(instr_t):
+    name = 'IF'
     def __init__(self):
         instr_t.__init__(self)
         self.next_if = None
@@ -31,6 +32,7 @@ def if_instr_constr(matches,parser):
     return newif
 
 class else_instr_t(instr_t):
+    name = 'ELSE'
     def __init__(self,if_instr):
         """
         if_instr is the "if" this "else" instruction/statement belongs to
@@ -55,6 +57,7 @@ class endif_instr_t(instr_t):
     we finish by going to the next instruction following this instruction (we
     don't override execute because that's just what it does).
     """
+    name = 'ENDIF'
     def __init__(self,if_instr):
         instr_t.__init__(self)
         self.if_instr = if_instr
