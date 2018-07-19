@@ -85,7 +85,7 @@ class subroutdefinstr_t(instr_t):
         """
         if not exec_env.scopes:
             raise Exception("No scope in execution environment!")
-        exec_env.scopes.subroutines[self.name]=self.first_instruction
+        exec_env.scopes.subroutines[self.name]=self.first_instr
         instr_t.execute(self,stack,exec_env)
 
 def subroutdefinstr_enddef(parser):
@@ -113,7 +113,11 @@ def subroutdefinstr_enddef(parser):
     # definition was started. Don't worry we don't lose the old
     # parser.last_instr because this is also the last instruction in the
     # instruction list held in the first_instr field of subroutdef_t
-    parser.last_instr = parser.last_instr_stack.pop()
+    if len(parser.last_instr_stack) > 0:
+        parser.last_instr = parser.last_instr_stack.pop()
+    else:
+        # The program should be done at this point
+        parser.last_instr = None
     # pop the last subroutine definition we were just working on, because we are
     # done with it now
     last_def = parser.cur_subrout_def.pop()
