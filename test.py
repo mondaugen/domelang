@@ -106,8 +106,13 @@ progs=[
     ([],'{a+}1 2 @a',[3],None),
     # subroutine recursion
     ([],'{a1-?@a»}10@a',[0],None),
-    ## nested definitions
-    #([],'{a+{b-}}1 2 @a4@b',[-1],None),
+    # nested definitions
+    # outer b shouldn't do anything
+    ([],'{a+{b-}@b} 1 2 3 4 @a@b',[1,-5],None),
+    # outer b should multiply
+    ([],'{a+{b-}@b}{b×}2 2 3 4 @a@b',[-10],None),
+    # redefining b should change behavior of a
+    ([],'{a@b‡@b}{b×}2 3 4 @a {b+} @a',[292],None),
     #([],'{a+{b}}1 2 @a4@b',[3,4],None),
     #([],'{b10+}{a9-@b}11@a',[12],None),
     ## bounce back and forth
