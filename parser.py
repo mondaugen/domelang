@@ -176,7 +176,12 @@ cmd_parsers = [
     # local register push
     cmd_parser_t(
         subrout.localvarpushinstr_t.name,
-         '(″|‴)([a-zA-Z_])',
+         '(″)([a-zA-Z_])',
+         subrout.localvarpushinstr_constr
+    ),
+    cmd_parser_t(
+        subrout.localvarpushinstr_t.name,
+         '(‴)([a-zA-Z_])',
          subrout.localvarpushinstr_constr
     ),
     # local register pop

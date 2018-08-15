@@ -101,11 +101,17 @@ progs=[
     ([1],'′a2`a',[2,1],None),
     ([1],'′a2′b3`a4`b',[3,1,4,2],None),
     ([1],'′a2′b5′b3`a4`b`b',[3,1,4,5,2],None),
+
     # subroutines
     ([],'{a9-}11@a@a',[-7],None),
     ([],'{a+}1 2 @a',[3],None),
     # subroutine recursion
     ([],'{a1-?@a»}10@a',[0],None),
+    # subroutine recursion with definition at the end 
+    ([],'{a1-?@a¦{a69}@a»}10@a',[0,69],None),
+    ([],'{a1-?@a»{a69}@a}10@a',[0,69,69,69,69,69,69,69,69,69,69],None),
+    ([],'{a‡1-?@a¦{a69}@a»}10@a',[10,9,8,7,6,5,4,3,2,1,0,69],None),
+
     # nested definitions
     # outer b shouldn't do anything
     ([],'{a+{b-}@b} 1 2 3 4 @a@b',[1,-5],None),
@@ -118,6 +124,9 @@ progs=[
     ## bounce back and forth
     #([],'{b2- ‡10≤?↓@a¦↓»}{a3+@b}0@a',[11],None),
     # ([],'{a@a}@a',[0],None), # this program should never halt
+
+    # local variables
+    ([],'1″a{_‶a7‴a3″a4‶a}@_‶a‶b',[1,4,3,7],None),
 ]
 
 passed=True
