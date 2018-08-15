@@ -173,6 +173,19 @@ cmd_parsers = [
         '(`)([a-zA-Z_])',
         registers.register_pop_exec_instr_constr
     ),
+    # local register push
+    cmd_parser_t(
+        subrout.localvarpushinstr_t.name,
+         '(″|‴)([a-zA-Z_])',
+         subrout.localvarpushinstr_constr
+    ),
+    # local register pop
+    cmd_parser_t(
+        subrout.localvarpopinstr_t.name,
+        '(‶)([a-zA-Z_])',
+        subrout.localvarpopinstr_constr
+    )
+    # reserved variables could be @⁰@¹ ²³⁴⁵⁶⁷⁸⁹₀₁₂₃₄₅₆₇₈₉ ٰٰ
 ]
 
 class parser_t:
@@ -192,6 +205,15 @@ class parser_t:
         self.last_instr_stack=[]
         self.last_instr = None #TODO What is this initially?
         self.cur_subrout_def = []
+
+    def proc_macros(self,cmds):
+        """
+        Take a string containing commands and macro definitions and gather the
+        macro definitions, adding them to the macro definition list. Then apply
+        the substitutions they represent, starting with the most recently defined macro
+        definition.
+        """
+        pass
 
     
     def parse(self,cmds):

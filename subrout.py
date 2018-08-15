@@ -1,16 +1,20 @@
 from common import *
 from instruction import *
 
+VAR_DEFINE=1
+VAR_REDEFINE=2
+
 class subroutscope_t:
     """
     Contains a set of subroutines valid in a particular scope.
     This is used by the executer to keep track of what routines are in scope
     and to make it easy to "pop" routines that are no longer in scope when a
-    routine finishes.
+    routine finishes. Also contains local variables.
     """
     def __init__(self,parent):
         self.parent = parent
         self.subroutines = dict()
+        self.variables = dict()
 
 class srscopepush_instr_t(instr_t):
 
@@ -177,3 +181,79 @@ def subroutexecinstr_create(name):
 
 def subroutexecinstr_constr(matches,parser):
     return subroutexecinstr_create(matches[1])
+
+class localvarpushinstr_t(instr_t):
+    """
+    Value at top of stack pushed (moved) to the top of the local variable.
+    This can be instantiated in 2 modes: one makes a defintion at the local
+    scope, the other looks for the closest definition and appends the new
+    variable there. In the latter mode, if no definition yet exists, it is
+    created in the local scope.
+    """
+    name = 'LOCALVARPUSH'
+    def __init__(self,name,mode=VAR_DEFINE):
+        """
+        name is the name of the variable to push to
+        """
+        instr_t.__init__(self)
+        self.name = name
+        self.mode = mode
+
+    def execute(self,stack,exec_env):
+        varfound = False
+        if self.mode == VAR_REDEFINE:
+            # search up scopes for first variable of this name
+            scope = exec_env.scopes
+            while scope:
+                if self.name in scope.variables.keys():
+                    scope.variables[self.name].append(stack.pop())
+                    varfound = True
+                    break
+                else:
+                    scope = scope.parent
+        if (self.mode == VAR_DEFINE) or not varfound:
+            if self.name in exec_env.scopes.variables.keys():
+                # If stack already started under that name, append
+                exec_env.scopes.variables[self.name].append(stack.pop())
+            else:
+                # Otherwise start a new stack
+                exec_env.scopes.variables[self.name] = [stack.pop()]
+        instr_t.execute(self,stack,exec_env)
+
+def localvarpushinstr_constr(matches,parser):
+    if matches[0] == '″':
+        return localvarpushinstr_t(matches[1],VAR_DEFINE)
+    if matches[0] == '‴':
+        return localvarpushinstr_t(matches[1],VAR_REDEFINE)
+
+class localvarpopinstr_t(instr_t):
+    """
+    Value at top of local variable stack moved to the top of the main stack.
+    """
+    name = 'LOCALVARPOP'
+    def __init__(self,name):
+        """
+        name is the name of the variable to pop from
+        """
+        instr_t.__init__(self)
+        self.name = name
+
+    def execute(self,stack,exec_env):
+        # search up the scopes for the first variable of this name
+        scope = exec_env.scopes
+        ret = None
+        while scope:
+            if self.name in scope.variables.keys():
+                ret = scope.variables[self.name].pop()
+                break
+            else:
+                scope = scope.parent
+        if ret:
+            stack.append(ret)
+        # Otherwise leave main stack unchanged (do nothing)
+
+        # execute super class' execute function
+        instr_t.execute(self,stack,exec_env)
+
+def localvarpopinstr_constr(matches,parser):
+    return localvarpopinstr_t(matches[1])
