@@ -193,6 +193,9 @@ cmd_parsers = [
     # reserved variables could be @⁰@¹ ²³⁴⁵⁶⁷⁸⁹₀₁₂₃₄₅₆₇₈₉ ٰٰ
 ]
 
+# Macro searching regular expression
+macro_pat = re.compile("#([^#]+)#([^#]*)#")
+
 class parser_t:
     """
     A parser of a domelang program.
@@ -210,6 +213,7 @@ class parser_t:
         self.last_instr_stack=[]
         self.last_instr = None #TODO What is this initially?
         self.cur_subrout_def = []
+        self.macros = []
 
     def proc_macros(self,cmds):
         """
@@ -218,8 +222,23 @@ class parser_t:
         the substitutions they represent, starting with the most recently defined macro
         definition.
         """
-        pass
-
+        # parse the macro defs
+        while True:
+            mat=macro_pat.search(cmds)
+            if not mat:
+                break
+            # remove the macro def from the string
+            cmds=macro_pat.sub('',cmds)
+            print("MACRODEF: %s → %s" % (mat.group(1),mat.group(2)))
+            # Store the newly found macro def
+            self.macros.append((re.compile(mat.group(1)),mat.group(2)))
+        # make the macro substitutions
+        for mac,rep in reversed(self.macros):
+            # TODO: Currently macros are only replaced once, so recursive macro
+            # definitions aren't possible
+            cmds=mac.sub(rep,cmds)
+        # return transformed command string
+        return cmds
     
     def parse(self,cmds):
         """
@@ -232,6 +251,8 @@ class parser_t:
         # the first instruction will push the "main" scope which is the
         # outer-most scope.
         subrout.subroutparse_newdef("main",self)
+        # parse macros and transform commands
+        cmds = self.proc_macros(cmds)
         while cmds:
             matched = False
             for cmdp in cmd_parsers:

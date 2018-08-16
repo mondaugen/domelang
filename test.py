@@ -127,6 +127,13 @@ progs=[
 
     # local variables
     ([],'1″a{_‶a7‴a3″a4‶a}@_‶a‶b',[1,4,3,7],None),
+
+    # macros, tentatively ṁ will be a macro prefix by convention
+    # double double
+    ([],'#ṁd#‡‡#1ṁd',[1,1,1],None),
+    # call multiple times (with groups). We use "r" prefix because that makes
+    # the representation of the string the same as would be in a file
+    ([],r'#ṁm([a-z])([a-z])#@\1@\2@\1@\2#{x2+}{y3×}2ṁmxy',[42],None)
 ]
 
 passed=True
